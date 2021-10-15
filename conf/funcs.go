@@ -268,7 +268,10 @@ func ApplyServiceSettings(serviceSettings ServiceSettings) error {
 
 	// (re)running containers based on their names
 	for _, container := range serviceSettings.Containers {
-
+		// don't do anything if the service is not enabled
+		if !container.Enabled {
+			continue
+		}
 		// checking if the container with the same name exist
 		_, isFound := Find(containerNameList, container.Name)
 		if isFound {
@@ -306,6 +309,7 @@ func ApplyServiceSettings(serviceSettings ServiceSettings) error {
 		}
 		cmd.Wait()
 		log.Infof("Created container %s", container.Name)
+		// todo: run on boot
 	}
 	return nil
 }
