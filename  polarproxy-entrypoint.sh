@@ -10,9 +10,9 @@ ip link set dev tun0 up
 # TODO: egress is a hardcoded container name that needs to be an env variable
 opt/tun2socks/tun2socks-linux-amd64 -device tun0 -proxy socks5://egress:1080 &
 # remove default route and replace with tun0
-ip route del default
-ip route add default dev tun0
-sleep 1
+
+sh -c "sleep 30 && ip route del default && ip route add default dev tun0 && sleep 1" &
+
 
 cd /opt/polarproxy
 dotnet PolarProxy.dll $@
