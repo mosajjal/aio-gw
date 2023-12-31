@@ -42,6 +42,7 @@ services:
       - ARKIME_CREATEADMINUSER=true
       - ARKIME_FORCEINIT=true
       - ARKIME_VIEWHOST=0.0.0.0
+      - ARKIME_BPF= # without emptying out the bpf option, pcap-over-ip does not work
       - ARKIME_USERAUTHIPS=0.0.0.0/0
       - ARKIME_ADMINCREDS=${ARKIME_USERNAME}:${ARKIME_PASSWORD}
       - ARKIME_ELASTICSEARCH=http://elasticsearch:9200
