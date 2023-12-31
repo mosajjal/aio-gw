@@ -1,0 +1,20 @@
+FROM alpine:edge
+
+RUN apk add --no-cache tor
+RUN wget https://raw.githubusercontent.com/mosajjal/binary-tools/master/x64/tor/snowflake \
+    -O /opt/snowflake && chmod +x /opt/snowflake && chown tor /opt/snowflake
+
+RUN echo -e "\
+TransPort 0.0.0.0:9040 \n\
+DNSPort 0.0.0.0:9053 \n\
+SocksPort 0.0.0.0:9050 \n\
+Log notice file /var/log/tor/notices.log \n\
+ClientTransportPlugin snowflake exec /opt/snowflake \
+-url https://snowflake-broker.torproject.net.global.prod.fastly.net/ \
+-front cdn.sstatic.net \
+-ice stun:stun.voip.blackberry.com:3478,stun:stun.altar.com.pl:3478,stun:stun.antisip.com:3478,stun:stun.bluesip.net:3478,stun:stun.dus.net:3478,stun:stun.epygi.com:3478,stun:stun.sonetel.com:3478,stun:stun.sonetel.net:3478,stun:stun.stunprotocol.org:3478,stun:stun.uls.co.za:3478,stun:stun.voipgate.com:3478,stun:stun.voys.nl:3478 \n\
+Bridge snowflake 192.0.2.3:1 \n\
+" > /etc/tor/torrc
+
+USER tor
+ENTRYPOINT ["/usr/bin/tor", "-f", "/etc/tor/torrc"]

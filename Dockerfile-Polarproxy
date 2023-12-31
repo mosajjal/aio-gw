@@ -1,5 +1,17 @@
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2
-RUN groupadd -g 31337 polarproxy && useradd -m -u 31337 -g polarproxy polarproxy && mkdir -p /var/log/PolarProxy /opt/polarproxy && chown polarproxy:polarproxy /var/log/PolarProxy && curl https://www.netresec.com/?download=PolarProxy | tar -xzf - -C /opt/polarproxy
-USER polarproxy
-WORKDIR /opt/polarproxy/
-ENTRYPOINT ["dotnet", "PolarProxy.dll"]
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+
+RUN apt update && apt install -y curl unzip iproute2 && apt clean
+
+RUN groupadd -g 31337 polarproxy && useradd -m -u 31337 -g polarproxy polarproxy && \
+    mkdir -p /var/log/PolarProxy /opt/polarproxy && chown polarproxy:polarproxy /var/log/PolarProxy && \
+    curl https://www.netresec.com/?download=PolarProxy | tar -xzf - -C /opt/polarproxy
+
+# install tun2socks for upstream 
+RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
+    curl -L -o tun2socks-linux-amd64.zip "https://github.com/xjasonlyu/tun2socks/releases/download/v2.5.2/tun2socks-linux-amd64.zip" && \
+    unzip tun2socks-linux-amd64.zip && rm tun2socks-linux-amd64.zip
+
+
+COPY ./polarproxy-entrypoint.sh /polarproxy-entrypoint.sh
+RUN chmod +x /polarproxy-entrypoint.sh
+ENTRYPOINT ["/polarproxy-entrypoint.sh"]

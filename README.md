@@ -11,6 +11,42 @@ HELP NEEDED: if you're keen to contribute to `aio-gw`, ping me! Lots to be done 
 - settings enforcement outside the management component is not done
 - outbound options as well as option fields in html are not working
 
+```lua
++--------+      +--------------+      +-------------+
+| SOCKS5 |----->| OpenSearch   |      | Upstream 1  |
++--------+      +--------------+      | (Direct)    |
+   |            |                     +-------------+
+   v            v                     /             
++--------+      +--------------+     /              
+| Route  |      | Arkime       |    /               
++--------+      | (pcap over   |---/                
+   |            |  ip)         |                    
+   v            +--------------+     +-------------+
++--------+      |                     | Upstream 2  |
+| Mgmt   |      |                     | (SOCKS5)    |
++--------+      v                     +-------------+
+   |        +--------------+         /              
+   |        | PolarProxy   |--------/               
+   v        +--------------+       /                
++--------+  |                     /                 
+| Arkime |  |      +--------------+     +-------------+
++--------+  |      | tun2socks   |     | Upstream 2  |
+            |----->+--------------+     | (Wg)        |
+            |                           +-------------+
+            |                          /              
+            |      +--------------+   /               
+            |      | GW Manager   |--/                
+            +----->+--------------+                   
+                   |                     +-------------+
+                   |                     | Upstream 4  |
+                   |                     | (Fakenet)   |
+                   |                     +-------------+
+                   v
+              +----------+
+              | Internet |
+              +----------+
+```
+
 # requirements
 
 A clean VM with `podman` 2.0+ installed. Since AIO-GW works with `nftables`, any `iptables` installation with `nat` table configured will conflict, hence `docker` is not supported
