@@ -13,9 +13,9 @@ opt/tun2socks/tun2socks-linux-amd64 -device tun0 -proxy socks5://egress:1080 &
 
 sh -c "sleep 30 && ip route del default && ip route add default dev tun0 && sleep 1" &
 
-# run tcpdump to capture all traffic from tun0 to arkime
+# run dump2poip to convert dump to poip
 # TODO: arkime is HARDCODED
-tcpdump -i tun0 -w - | nc arkime 57012 &
+/opt/polarproxy/dump2poip -be -i tun0 -o tcp://arkime:57012 &
 
 cd /opt/polarproxy
 dotnet PolarProxy.dll $@

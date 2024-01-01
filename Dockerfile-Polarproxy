@@ -1,6 +1,17 @@
+FROM alpine:edge AS stage1
+
+RUN apk add --no-cache libcap-static libpcap-dev linux-headers git go file dpkg rpm --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+
+RUN mkdir /app && mkdir /release
+
+WORKDIR /app
+COPY ./dump2poip /app/
+
+RUN go build --ldflags "-L /usr/lib/libcap.a -linkmode external -extldflags \"-static\"" -o /release/dump2poip .
+
 FROM mcr.microsoft.com/dotnet/runtime:8.0
 
-RUN apt update && apt install -y curl unzip iproute2 tcpdump && apt clean
+RUN apt update && apt install -y curl unzip iproute2 tcpdump netcat-openbsd && apt clean
 
 RUN groupadd -g 31337 polarproxy && useradd -m -u 31337 -g polarproxy polarproxy && \
     mkdir -p /var/log/PolarProxy /opt/polarproxy && chown polarproxy:polarproxy /var/log/PolarProxy && \
@@ -10,6 +21,9 @@ RUN groupadd -g 31337 polarproxy && useradd -m -u 31337 -g polarproxy polarproxy
 RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
     curl -L -o tun2socks-linux-amd64.zip "https://github.com/xjasonlyu/tun2socks/releases/download/v2.5.2/tun2socks-linux-amd64.zip" && \
     unzip tun2socks-linux-amd64.zip && rm tun2socks-linux-amd64.zip
+
+# copy dump2poip to /opt/polarproxy
+COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
 
 COPY ./polarproxy-entrypoint.sh /polarproxy-entrypoint.sh
 RUN chmod +x /polarproxy-entrypoint.sh
