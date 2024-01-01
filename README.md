@@ -14,10 +14,16 @@ HELP NEEDED: if you're keen to contribute to `aio-gw`, ping me! Lots to be done 
 ```mermaid
 flowchart TD
 subgraph containers
-    START --> |socks:1080| A(Ingress Glider)
-    A --> |socks:1080| B(PolarProxy\nTLS Decryption)
-    B --> |socks:1080| C(Egrees Glider)
-    B -.-> |pcap over ip x 2|Arkime
+    subgraph TLS Decryption
+    PolarProxy
+    PolarProxy -.-> tun2socks
+    tun2socks -.-> |raw packets|dump2poip
+    dump2poip
+    end
+    Ingress --> |socks:1080| PolarProxy
+    tun2socks --> |socks:1080| C(Egrees Glider)
+    PolarProxy -.-> |pcap over ip|Arkime
+    dump2poip -.-> |pcap over ip|Arkime
     Arkime -.-> |metadata| Elasticsearch
     C -->|SOCKS:9050| Tor
     C -->|DNS:9053| Tor
@@ -25,12 +31,12 @@ subgraph containers
 end
 
 subgraph Monitoring
-    computer -.-> |8005/TCP|Arkime
-    computer -.-> |8081/TCP|B
+    computer ==> |8005/TCP|Arkime
+    computer ==> |8081/TCP|PolarProxy
 end
 
 subgraph Sandbox
-    Z(any PC/container\nrunning tun2socks or socks5 client) --> |SOCKS:1080|START
+    Z(any PC/container\nrunning tun2socks or socks5 client) --> |SOCKS:1080|Ingress
 end
 ```
 
