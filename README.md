@@ -11,40 +11,27 @@ HELP NEEDED: if you're keen to contribute to `aio-gw`, ping me! Lots to be done 
 - settings enforcement outside the management component is not done
 - outbound options as well as option fields in html are not working
 
-```lua
-+--------+      +--------------+      +-------------+
-| SOCKS5 |----->| OpenSearch   |      | Upstream 1  |
-+--------+      +--------------+      | (Direct)    |
-   |            |                     +-------------+
-   v            v                     /             
-+--------+      +--------------+     /              
-| Route  |      | Arkime       |    /               
-+--------+      | (pcap over   |---/                
-   |            |  ip)         |                    
-   v            +--------------+     +-------------+
-+--------+      |                     | Upstream 2  |
-| Mgmt   |      |                     | (SOCKS5)    |
-+--------+      v                     +-------------+
-   |        +--------------+         /              
-   |        | PolarProxy   |--------/               
-   v        +--------------+       /                
-+--------+  |                     /                 
-| Arkime |  |      +--------------+     +-------------+
-+--------+  |      | tun2socks   |     | Upstream 2  |
-            |----->+--------------+     | (Wg)        |
-            |                           +-------------+
-            |                          /              
-            |      +--------------+   /               
-            |      | GW Manager   |--/                
-            +----->+--------------+                   
-                   |                     +-------------+
-                   |                     | Upstream 4  |
-                   |                     | (Fakenet)   |
-                   |                     +-------------+
-                   v
-              +----------+
-              | Internet |
-              +----------+
+```mermaid
+flowchart TD
+subgraph containers
+    START --> |socks:1080| A(Ingress Glider)
+    A --> |socks:1080| B(PolarProxy\nTLS Decryption)
+    B --> |socks:1080| C(Egrees Glider)
+    B -.-> |pcap over ip x 2|Arkime
+    Arkime -.-> |metadata| Elasticsearch
+    C -->|SOCKS:9050| Tor
+    C -->|DNS:9053| Tor
+    Tor --> Internet
+end
+
+subgraph Monitoring
+    computer -.-> |8005/TCP|Arkime
+    computer -.-> |8081/TCP|B
+end
+
+subgraph Sandbox
+    Z(any PC/container\nrunning tun2socks or socks5 client) --> |SOCKS:1080|START
+end
 ```
 
 # requirements
