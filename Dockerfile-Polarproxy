@@ -24,23 +24,19 @@ RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
 
 # copy dump2poip to /opt/polarproxy
 COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
-COPY --from=ochinchina/supervisord:latest /usr/local/bin/supervisord /supervisord
 
 RUN echo '\
 set -x  \n\
 ip tuntap add mode tun dev tun0 \n\
 ip addr add 100.100.100.100/32 dev tun0 \n\
 ip link set dev tun0 up \n\
-sleep 10 \n\
-' > /createtun.sh && chmod +x /createtun.sh
-
-RUN echo '\
-set -x \n\
-sleep 5 \n\
 ip route del default \n\
 ip route add default dev tun0 \n\
-sleep 5 \n\
-' > /setgateway.sh && chmod +x /setgateway.sh
+sleep 1 \n\
+/opt/tun2socks/tun2socks-linux-amd64 -device tun0 -proxy $EGRESS_PROXY & \n\
+/opt/polarproxy/dump2poip -be -i tun0 -o $ARKIME_POIP & \n\
+cd /opt/polarproxy && dotnet PolarProxy.dll $POLARPROXY_ARGS \n\
+' > /init && chmod +x /init
 
-COPY ./polarproxy-supervisor.conf /supervisord.conf
-ENTRYPOINT ["/supervisord" ,"-c=/supervisord.conf"]
+
+ENTRYPOINT ["/init"]

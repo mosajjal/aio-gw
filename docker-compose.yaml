@@ -69,7 +69,6 @@ services:
   polarproxy:
     container_name: polarproxy
     build:
-      # TODO: add tun2socks to this dockerfile so the egress sends it to another container
       dockerfile: ./Dockerfile-Polarproxy
     networks:
       - nointernet
