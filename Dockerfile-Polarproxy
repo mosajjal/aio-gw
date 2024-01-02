@@ -31,15 +31,15 @@ set -x  \n\
 ip tuntap add mode tun dev tun0 \n\
 ip addr add 100.100.100.100/32 dev tun0 \n\
 ip link set dev tun0 up \n\
-cat \n\
+sleep 10 \n\
 ' > /createtun.sh && chmod +x /createtun.sh
 
 RUN echo '\
 set -x \n\
-sleep 20 \n\
+sleep 5 \n\
 ip route del default \n\
 ip route add default dev tun0 \n\
-cat \n\
+sleep 5 \n\
 ' > /setgateway.sh && chmod +x /setgateway.sh
 
 COPY ./polarproxy-supervisor.conf /supervisord.conf
