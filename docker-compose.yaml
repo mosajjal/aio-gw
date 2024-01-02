@@ -77,7 +77,10 @@ services:
       - "NET_ADMIN"
     devices:
       - "/dev/net/tun"
-    command: "-v --socks 1080 --nontls allow --certhttp 8081 --pcapoveripconnect arkime:57012 --cacert cn:${POLAR_CA_NAME}"
+    environment:
+      - EGRESS_PROXY=socks5://egress:1080
+      - ARKIME_POIP=tcp://arkime:57012
+      - POLARPROXY_ARGS="-v --socks 1080 --nontls allow --certhttp 8081 --pcapoveripconnect arkime:57012 --cacert cn:${POLAR_CA_NAME}"
     depends_on:
       arkime:
         condition: service_healthy

@@ -24,7 +24,7 @@ RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
 
 # copy dump2poip to /opt/polarproxy
 COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
+COPY --from=ochinchina/supervisord:latest /usr/local/bin/supervisord /supervisord
 
-COPY ./polarproxy-entrypoint.sh /polarproxy-entrypoint.sh
-RUN chmod +x /polarproxy-entrypoint.sh
-ENTRYPOINT ["/polarproxy-entrypoint.sh"]
+COPY ./supervisord.conf /supervisord.conf
+ENTRYPOINT ["/supervisord -c /supervisord.conf"]
