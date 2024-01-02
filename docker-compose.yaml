@@ -44,7 +44,9 @@ services:
       - ARKIME_VIEWHOST=0.0.0.0
       - ARKIME_BPF= # without emptying out the bpf option, pcap-over-ip does not work
       - ARKIME_USERAUTHIPS=0.0.0.0/0
-      - ARKIME_PCAPWRITESIZE=2048 # increase this to improve performance
+      - ARKIME_TCPSAVETIMEOUT=10
+      - ARKIME_CAPTUREHOST=arkime
+      - ARKIME_OFFLINEDISPATCHAFTER=1
       - ARKIME_ADMINCREDS=${ARKIME_USERNAME}:${ARKIME_PASSWORD}
       - ARKIME_ELASTICSEARCH=http://elasticsearch:9200
       - ARKIME_VIEWURL=http://arkime:8005
