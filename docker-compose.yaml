@@ -31,7 +31,7 @@ services:
   # a capturer that listens on pcap-over-ip port 57012, and a web interface that listens on port 8005
   arkime:
     container_name: arkime
-    image: ghcr.io/mosajjal/arkime-container:v${ARKIME_VERSION}
+    image: ghcr.io/mosajjal/arkime-container:${ARKIME_VERSION}
     pull_policy: if_not_present
     command: [ "--dropUser=root", "--dropGroup=root", "--manufURL=https://www.wireshark.org/download/automated/data/manuf"]
     ports:
