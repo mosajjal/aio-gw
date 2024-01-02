@@ -26,7 +26,7 @@ RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
 COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
 COPY --from=ochinchina/supervisord:latest /usr/local/bin/supervisord /supervisord
 
-RUN echo -e '\
+RUN echo '\
 set -x  \n\
 ip tuntap add mode tun dev tun0 \n\
 ip addr add 100.100.100.100/32 dev tun0 \n\
@@ -34,7 +34,7 @@ ip link set dev tun0 up \n\
 cat \n\
 ' > /createtun.sh && chmod +x /createtun.sh
 
-RUN echo -e '\
+RUN echo '\
 while true \n\  
 do \n\
     if [ $(ip route | awk '/default/ { print $5 }') != "tun0" ]; then \n\
