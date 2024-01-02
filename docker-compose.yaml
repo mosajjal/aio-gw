@@ -47,6 +47,7 @@ services:
       - ARKIME_PCAPWRITESIZE=2048 # increase this to improve performance
       - ARKIME_ADMINCREDS=${ARKIME_USERNAME}:${ARKIME_PASSWORD}
       - ARKIME_ELASTICSEARCH=http://elasticsearch:9200
+      - ARKIME_VIEWURL=http://arkime:8005
     healthcheck:
       interval: 10s
       retries: 80
