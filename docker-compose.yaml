@@ -44,6 +44,7 @@ services:
       - ARKIME_VIEWHOST=0.0.0.0
       - ARKIME_BPF= # without emptying out the bpf option, pcap-over-ip does not work
       - ARKIME_USERAUTHIPS=0.0.0.0/0
+      - ARKIME_PCAPWRITESIZE=2048 # increase this to improve performance
       # - ARKIME_ADMINCREDS=${ARKIME_USERNAME}:${ARKIME_PASSWORD}
       - ARKIME_ELASTICSEARCH=http://elasticsearch:9200
     healthcheck:
@@ -79,7 +80,7 @@ services:
     environment:
       - EGRESS_PROXY=socks5://egress:1080
       - ARKIME_POIP=tcp://arkime:57012
-      - POLARPROXY_ARGS="-v --socks 1080 --nontls allow --certhttp 8081 --pcapoveripconnect arkime:57012 --cacert cn:${POLAR_CA_NAME}"
+      - POLARPROXY_ARGS=-v --socks 1080 --nontls allow --certhttp 8081 --pcapoveripconnect arkime:57012 --cacert cn:${POLAR_CA_NAME}
     depends_on:
       arkime:
         condition: service_healthy
