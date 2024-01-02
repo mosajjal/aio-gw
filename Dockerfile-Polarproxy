@@ -37,7 +37,7 @@ cat \n\
 RUN echo '\
 while true \n\  
 do \n\
-    if [ $(ip route | awk '/default/ { print $5 }') != "tun0" ]; then \n\
+    if [ $(ip route | awk \'/default/ { print $5 }\') != "tun0" ]; then \n\
         ip route del default \n\
         ip route add default dev tun0 \n\
     fi \n\
