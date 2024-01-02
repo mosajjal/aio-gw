@@ -31,6 +31,7 @@ services:
   # a capturer that listens on pcap-over-ip port 57012, and a web interface that listens on port 8005
   arkime:
     container_name: arkime
+    hostname: arkime
     image: ghcr.io/mosajjal/arkime-container:${ARKIME_VERSION}
     pull_policy: if_not_present
     command: [ "--dropUser=root", "--dropGroup=root", "--manufURL=https://www.wireshark.org/download/automated/data/manuf"]
@@ -44,7 +45,7 @@ services:
       - ARKIME_VIEWHOST=0.0.0.0
       - ARKIME_BPF= # without emptying out the bpf option, pcap-over-ip does not work
       - ARKIME_USERAUTHIPS=0.0.0.0/0
-      - ARKIME_TCPSAVETIMEOUT=10
+      - ARKIME_TCPSAVETIMEOUT=60
       - ARKIME_CAPTUREHOST=arkime
       - ARKIME_OFFLINEDISPATCHAFTER=1
       - ARKIME_ADMINCREDS=${ARKIME_USERNAME}:${ARKIME_PASSWORD}
@@ -66,7 +67,7 @@ services:
       # "default" net provides internet access form the container. this container uses the internet to download and update mmdb files
       - default
     volumes:
-      - arkime-pcaps:/opt/arkime/raw
+      - ./pcaps:/opt/arkime/raw
   # polarproxy is a TLS termination proxy that recreates sessions as pcap files and sends them over IP to Arkime. 
   # it exposes it services (in the current configuration) as a SOCKS5 proxy on port 1080, and the CA cert is
   # exposed through a HTTP server on port 8081
