@@ -26,5 +26,5 @@ RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
 COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
 COPY --from=ochinchina/supervisord:latest /usr/local/bin/supervisord /supervisord
 
-COPY ./supervisord.conf /supervisord.conf
+COPY ./polarproxy-supervisor.conf /supervisord.conf
 ENTRYPOINT ["/supervisord -c /supervisord.conf"]
