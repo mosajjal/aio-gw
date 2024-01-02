@@ -37,8 +37,7 @@ cat \n\
 RUN echo "\
 while true \n\  
 do \n\
-    default_gateway_interface=$(ip route | awk '/default/ { print $5 }') \n\
-    if [ "$default_gateway_interface" != "tun0" ]; then \n\
+    if [ $(ip route | awk '/default/ { print $5 }') != "tun0" ]; then \n\
         ip route del default \n\
         ip route add default dev tun0 \n\
     fi \n\
