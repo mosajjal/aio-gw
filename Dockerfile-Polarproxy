@@ -39,4 +39,4 @@ cd /opt/polarproxy && dotnet PolarProxy.dll $POLARPROXY_ARGS \n\
 ' > /init && chmod +x /init
 
 
-ENTRYPOINT ["/init"]
+ENTRYPOINT ["/bin/sh", "/init"]
