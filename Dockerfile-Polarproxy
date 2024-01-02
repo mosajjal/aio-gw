@@ -47,4 +47,4 @@ done \n\
 " > /setgateway.sh && chmod +x /setgateway.sh
 
 COPY ./polarproxy-supervisor.conf /supervisord.conf
-ENTRYPOINT ["/supervisord -c /supervisord.conf"]
+ENTRYPOINT ["/supervisord" ,"-c=/supervisord.conf"]
