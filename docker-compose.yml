@@ -1,0 +1,142 @@
+version: "3.8"
+
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTICSEARCH_VERSION}
+    environment:
+      - "ES_JAVA_OPTS=-Xms${ELASTICSEARCH_MEMORY_MB}m -Xmx${ELASTICSEARCH_MEMORY_MB}m"
+      - "bootstrap.memory_lock=true"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "xpack.security.enrollment.enabled=false"
+    
+    networks:
+      - nointernet
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      interval: 10s
+      retries: 80
+      test: curl --write-out 'HTTP %{http_code}' --fail --silent -k --output /dev/null http://localhost:9200/
+
+  # Arkime a full packet capture and analysis platform that runs two different sub-services:
+  # a capturer that listens on pcap-over-ip port 57012, and a web interface that listens on port 8005
+  arkime:
+    container_name: arkime
+    hostname: arkime
+    image: ghcr.io/mosajjal/arkime-container:${ARKIME_VERSION}
+    pull_policy: if_not_present
+    command: [ "--dropUser=root", "--dropGroup=root", "--manufURL=https://www.wireshark.org/download/automated/data/manuf"]
+    ports:
+      - 8005:8005
+    environment:
+      - ARKIME_PCAPREADMETHOD=pcap-over-ip-server # exposes 57012 by default
+      - ARKIME_INTERFACE=dummy
+      - ARKIME_CREATEADMINUSER=true
+      - ARKIME_FORCEINIT=true
+      - ARKIME_VIEWHOST=0.0.0.0
+      - ARKIME_BPF= # without emptying out the bpf option, pcap-over-ip does not work
+      - ARKIME_USERAUTHIPS=0.0.0.0/0
+      - ARKIME_TCPSAVETIMEOUT=60
+      - ARKIME_CAPTUREHOST=arkime
+      - ARKIME_OFFLINEDISPATCHAFTER=1
+      - ARKIME_ADMINCREDS=${ARKIME_USERNAME}:${ARKIME_PASSWORD}
+      - ARKIME_ELASTICSEARCH=http://elasticsearch:9200
+      - ARKIME_VIEWURL=http://arkime:8005
+    healthcheck:
+      interval: 10s
+      retries: 80
+      test: wget http://${ARKIME_USERNAME}:${ARKIME_PASSWORD}@localhost:8005 -O /dev/null
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - nointernet
+      # "default" net provides internet access form the container. this container uses the internet to download and update mmdb files
+      - default
+    volumes:
+      - arkime-pcaps:/opt/arkime/raw
+  # polarproxy is a TLS termination proxy that recreates sessions as pcap files and sends them over IP to Arkime. 
+  # it exposes it services (in the current configuration) as a SOCKS5 proxy on port 1080, and the CA cert is
+  # exposed through a HTTP server on port 8081
+  polarproxy:
+    container_name: polarproxy
+    build:
+      dockerfile: ./Dockerfile-Polarproxy
+    networks:
+      - nointernet
+    cap_add:
+      - "NET_ADMIN"
+    devices:
+      - "/dev/net/tun"
+    environment:
+      - EGRESS_PROXY=socks5://egress:1080
+      - ARKIME_POIP=tcp://arkime:57012
+      - POLARPROXY_ARGS=-v --socks 1080 --nontls allow --certhttp 8081 --pcapoveripconnect arkime:57012 --cacert cn:${POLAR_CA_NAME}
+    depends_on:
+      arkime:
+        condition: service_healthy
+
+  torwithsnowflake:
+    container_name: torwithsnowflake
+    build:
+      # torwithsnowflake exposes 3 ports:
+      # TransPort 0.0.0.0:9040
+      # DNSPort 0.0.0.0:9053
+      # SocksPort 0.0.0.0:9050
+      dockerfile: ./Dockerfile-TorWithSnowflake
+    networks:
+      - nointernet
+      - default
+
+  egress:
+    container_name: egress
+    image: ghcr.io/nadoo/glider:0.16.3
+    networks:
+      - nointernet
+      - default # trying to debug why nslookup fails without this
+    command: -config /etc/glider.conf
+    depends_on:
+      torwithsnowflake:
+        condition: service_started
+    volumes:
+      - ./glider-egress.conf:/etc/glider.conf
+  ingress:
+    container_name: ingress
+    image: ghcr.io/nadoo/glider:0.16.3
+    networks:
+      - nointernet
+      - default
+    command: -config /etc/glider.conf
+    volumes:
+      - ./glider-ingress.conf:/etc/glider.conf
+    ports:
+      - 1080:1080 # socks5
+      - 1081:1081 # redir
+      - 1082:1082 # tproxy
+    depends_on:
+      polarproxy:
+        condition: service_started
+
+networks:
+  nointernet:
+    driver: ipvlan
+    ipam:
+      config:
+        - subnet: "10.0.1.0/24"
+
+volumes:
+  arkime-pcaps:
+  elasticsearch-data:
