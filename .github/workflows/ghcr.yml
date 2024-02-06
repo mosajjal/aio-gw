@@ -39,3 +39,11 @@ jobs:
           file: ./Dockerfile-Polarproxy
           push: true
           tags: ghcr.io/mosajjal/aio-gw:polarproxy-latest
+
+      - name: Build PolarProxy
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile-TorWithSnowflake
+          push: true
+          tags: ghcr.io/mosajjal/aio-gw:torwithsnowflake-latest
