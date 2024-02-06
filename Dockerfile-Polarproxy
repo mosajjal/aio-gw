@@ -25,6 +25,14 @@ RUN mkdir /opt/tun2socks && cd /opt/tun2socks/ && \
 # copy dump2poip to /opt/polarproxy
 COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
 
+# coredns
+RUN  curl -L https://github.com/coredns/coredns/releases/download/v1.11.1/coredns_1.11.1_linux_amd64.tgz | tar -xzf - > /coredns
+RUN echo '\
+.:5353 { \n\
+     forwrad . udp://torwithsnowflake \n\
+}       \n\
+' > /corefile
+
 RUN echo '\
 set -x  \n\
 ip tuntap add mode tun dev tun0 \n\
@@ -35,8 +43,13 @@ ip route add default dev tun0 \n\
 sleep 1 \n\
 /opt/tun2socks/tun2socks-linux-amd64 -device tun0 -proxy $EGRESS_PROXY & \n\
 /opt/polarproxy/dump2poip -be -i tun0 -o $ARKIME_POIP & \n\
-cd /opt/polarproxy && dotnet PolarProxy.dll $POLARPROXY_ARGS \n\
+cd /opt/polarproxy && dotnet PolarProxy.dll $POLARPROXY_ARG & \n\
+/coredns -conf=/corefile & \n\
 ' > /init && chmod +x /init
 
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
 
-ENTRYPOINT ["/bin/sh", "/init"]
+CMD ["/bin/sh", "/init"]
