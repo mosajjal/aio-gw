@@ -29,7 +29,7 @@ COPY --from=stage1 /release/dump2poip /opt/polarproxy/dump2poip
 RUN  curl -L https://github.com/coredns/coredns/releases/download/v1.11.1/coredns_1.11.1_linux_amd64.tgz | tar -xzf - > /coredns
 RUN echo '\
 .:5353 { \n\
-     forwrad . udp://torwithsnowflake \n\
+     forward . udp://torwithsnowflake \n\
 }       \n\
 ' > /corefile
 
