@@ -73,8 +73,7 @@ services:
   # exposed through a HTTP server on port 8081
   polarproxy:
     container_name: polarproxy
-    build:
-      dockerfile: ./Dockerfile-Polarproxy
+    image: ghcr.io/mosajjal/aio-gw:polarproxy-latest
     networks:
       - nointernet
     cap_add:
@@ -91,12 +90,13 @@ services:
 
   torwithsnowflake:
     container_name: torwithsnowflake
-    build:
-      # torwithsnowflake exposes 3 ports:
-      # TransPort 0.0.0.0:9040
-      # DNSPort 0.0.0.0:9053
-      # SocksPort 0.0.0.0:9050
-      dockerfile: ./Dockerfile-TorWithSnowflake
+    image: ghcr.io/mosajjal/aio-gw:torwithsnowflake-latest
+    # build:
+    #   # torwithsnowflake exposes 3 ports:
+    #   # TransPort 0.0.0.0:9040
+    #   # DNSPort 0.0.0.0:9053
+    #   # SocksPort 0.0.0.0:9050
+    #   dockerfile: ./Dockerfile-TorWithSnowflake
     networks:
       - nointernet
       - default
