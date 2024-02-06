@@ -38,4 +38,4 @@ jobs:
           context: .
           file: ./Dockerfile-Polarproxy
           push: true
-          tags: ghcr.io/mosajjal/aio-gw:polarproxy:latest
+          tags: ghcr.io/mosajjal/aio-gw:polarproxy-latest
