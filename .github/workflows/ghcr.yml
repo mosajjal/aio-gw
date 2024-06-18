@@ -33,7 +33,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build PolarProxy
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile-Polarproxy
@@ -41,7 +41,7 @@ jobs:
           tags: ghcr.io/mosajjal/aio-gw:polarproxy-latest
 
       - name: Build PolarProxy
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile-TorWithSnowflake
